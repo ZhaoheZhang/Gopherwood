@@ -204,6 +204,7 @@ public:
             }
             printf("%s: %d\n", fileName, totalLength);
             EXPECT_EQ(totalLength, fileSize);
+            ASSERT_NO_THROW(gwCloseFile(fs, nFile));
         }
     }
 
@@ -245,9 +246,10 @@ public:
                 totalLength += length;
             }
             printf("%d: %d", fileCounter, totalLength);
+            ASSERT_NO_THROW(gwCloseFile(fs, nFile));
         }
     }
-    
+
 protected:
     char workDir[40];
     gopherwoodFS fs;
@@ -656,20 +658,42 @@ TEST_F(TestCInterface, Test_FAIL_InvalidFlags) {
     EXPECT_EQ(NULL, gwOpenFile(fs, fileName, GW_SEQACC|GW_RNDACC));
 }
 
-//TEST_F(TestCInterface, Test_SequenceWrite) {
+TEST_F(TestCInterface, Test_SequenceWrite_SequenceRead) {
+    char prefix[] = {"Sequence"};
+    int numFiles = 5;
+    tSize fileSize = 200;
+
+    printf("Writing\n");
+    TestSequenceWrite(fs, numFiles, fileSize, prefix);
+    printf("Reading\n");
+    TestSequenceRead(fs, numFiles, fileSize, prefix);
+}
+
+//TEST_F(TestCInterface, Test_RandomWrite_SequenceRead) {
+//    char prefix[] = {"Random"};
+//    int numFiles = 5;
+//    tSize fileSize = 100;
+//
+//    printf("Writing\n");
+//    TestRandomWrite(fs, numFiles, fileSize, prefix);
+//    printf("Reading\n");
+//    TestSequenceRead(fs, numFiles, fileSize, prefix);
+//}
+
+//TEST_F(TestCInterface, Test_SequenceWrite_RandomRead) {
 //    char prefix[] = {"Sequence"};
 //    int numFiles = 5;
 //    tSize fileSize = 20;
 //
 //    TestSequenceWrite(fs, numFiles, fileSize, prefix);
-//    TestSequenceRead(fs, numFiles, fileSize, prefix);
+//    TestRandomRead(fs, numFiles, fileSize, prefix);
 //}
-
-TEST_F(TestCInterface, Test_RandomWrite) {
-    char prefix[] = {"Random"};
-    int numFiles = 5;
-    tSize fileSize = 100;
-
-    TestRandomWrite(fs, numFiles, fileSize, prefix);
-    TestSequenceRead(fs, numFiles, fileSize, prefix);
-}
+//
+//TEST_F(TestCInterface, Test_RandomWrite_RandomRead) {
+//    char prefix[] = {"Random"};
+//    int numFiles = 5;
+//    tSize fileSize = 100;
+//
+//    TestRandomWrite(fs, numFiles, fileSize, prefix);
+//    TestRandomRead(fs, numFiles, fileSize, prefix);
+//}
