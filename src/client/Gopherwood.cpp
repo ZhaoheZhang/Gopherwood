@@ -227,13 +227,25 @@ void gwFormatContext(char *workDir) {
     }
 }
 
-bool gwFileExists(gopherwoodFS fs,const char * fileName) {
+bool gwFileExists(gopherwoodFS fs, const char * fileName) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwFileExists start------------------");
+    PARAMETER_ASSERT(fs, false, EINVAL);
+    PARAMETER_ASSERT(fileName, false, EINVAL);
     return fs->getFilesystem().exists(fileName);
 }
 
 gwFile gwOpenFile(gopherwoodFS fs, const char *fileName, int flags) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwOpenFile start------------------");
+
+    PARAMETER_ASSERT(fs, NULL, EINVAL);
+    PARAMETER_ASSERT(fileName, NULL, EINVAL);
+
+    PARAMETER_ASSERT((flags==GW_RDONLY || flags==GW_WRONLY || flags==GW_RDWR || flags==GW_RDONCE || flags==GW_RNDACC || flags==GW_SEQACC ||
+            flags==(GW_WRONLY|GW_CREAT) || flags==(GW_RDWR|GW_CREAT) ||
+            flags==(GW_WRONLY|GW_RNDACC) || flags==(GW_RDWR|GW_RNDACC) || flags==(GW_WRONLY|GW_SEQACC) || flags==(GW_RDWR|GW_SEQACC) ||
+            flags==(GW_WRONLY|GW_CREAT|GW_RNDACC) || flags==(GW_RDWR|GW_CREAT|GW_RNDACC) ||
+            flags==(GW_WRONLY|GW_CREAT|GW_SEQACC) || flags==(GW_RDWR|GW_CREAT|GW_SEQACC) ||
+            flags==(GW_RDONCE|GW_RNDACC) || flags==(GW_RDONCE|GW_SEQACC)), NULL, EINVAL);
 
     gwFile retVal = NULL;
     File *file;
@@ -257,6 +269,12 @@ gwFile gwOpenFile(gopherwoodFS fs, const char *fileName, int flags) {
 
 tSize gwRead(gopherwoodFS fs, gwFile file, void *buffer, tSize length) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwRead start------------------");
+
+    PARAMETER_ASSERT(fs, -1, EINVAL);
+    PARAMETER_ASSERT(file, -1, EINVAL);
+    PARAMETER_ASSERT(buffer, -1, EINVAL);
+    PARAMETER_ASSERT(length > 0, -1, EINVAL);
+
     try {
         tSize bytesRead = file->getFile().read(static_cast<char *>(buffer), length);
         return bytesRead;
@@ -270,6 +288,10 @@ tSize gwRead(gopherwoodFS fs, gwFile file, void *buffer, tSize length) {
 
 int64_t gwSeek(gopherwoodFS fs, gwFile file, tOffset desiredPos, int mode) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwSeek start------------------");
+
+    PARAMETER_ASSERT(fs, -1, EINVAL);
+    PARAMETER_ASSERT(file, -1, EINVAL);
+
     try {
         return file->getFile().seek(desiredPos, mode);
     } catch (...) {
@@ -282,6 +304,15 @@ int64_t gwSeek(gopherwoodFS fs, gwFile file, tOffset desiredPos, int mode) {
 
 tSize gwWrite(gopherwoodFS fs, gwFile file, const void *buffer, tSize length) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwWrite start------------------");
+
+    PARAMETER_ASSERT(fs, -1, EINVAL);
+    PARAMETER_ASSERT(file, -1, EINVAL);
+    PARAMETER_ASSERT(length >= 0, -1, EINVAL);
+
+    if(length < 0){
+            return false;
+    }
+
     try {
         file->getFile().write(static_cast<const char *>(buffer), length);
         return length;
@@ -295,6 +326,10 @@ tSize gwWrite(gopherwoodFS fs, gwFile file, const void *buffer, tSize length) {
 
 int gwFlush(gopherwoodFS fs, gwFile file) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwFlush start------------------");
+
+    PARAMETER_ASSERT(fs, -1, EINVAL);
+    PARAMETER_ASSERT(file, -1, EINVAL);
+
     try {
         file->getFile().flush();
         return 0;
@@ -308,6 +343,10 @@ int gwFlush(gopherwoodFS fs, gwFile file) {
 
 int gwCloseFile(gopherwoodFS fs, gwFile file) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwCloseFile start------------------");
+
+    PARAMETER_ASSERT(fs, -1, EINVAL);
+    PARAMETER_ASSERT(file, -1, EINVAL);
+
     try {
         fs->getFilesystem().CloseFile(file->getFile());
         delete file;
@@ -323,6 +362,10 @@ int gwCloseFile(gopherwoodFS fs, gwFile file) {
 
 int gwDeleteFile(gopherwoodFS fs, char *filePath) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwDeleteFile start------------------");
+
+    PARAMETER_ASSERT(fs, -1, EINVAL);
+    PARAMETER_ASSERT(filePath, -1, EINVAL);
+
     try {
         fs->getFilesystem().DeleteFile(filePath);
         return 0;
@@ -354,6 +397,9 @@ int gwDestroyContext(gopherwoodFS fs) {
 int gwCancelFile(gopherwoodFS fs, gwFile file) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwCancelFile start------------------");
 
+    PARAMETER_ASSERT(fs, -1, EINVAL);
+    PARAMETER_ASSERT(file, -1, EINVAL);
+
     try {
         file->getFile().close(true);
         delete file;
@@ -369,6 +415,12 @@ int gwCancelFile(gopherwoodFS fs, gwFile file) {
 
 int gwStatFile(gopherwoodFS fs, gwFile file, GWFileInfo* fileInfo) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwStatFile start------------------");
+
+    PARAMETER_ASSERT(fs, -1, EINVAL);
+    PARAMETER_ASSERT(file, -1, EINVAL);
+    PARAMETER_ASSERT(fileInfo != NULL, -1, EINVAL);
+    PARAMETER_ASSERT(fileInfo->fileSize >= 0, -1, EINVAL);
+
     int retVal = 0;
     try{
         file->getFile().getFileInfo(fileInfo);
@@ -382,7 +434,9 @@ int gwStatFile(gopherwoodFS fs, gwFile file, GWFileInfo* fileInfo) {
 
 int gwGetSysStat(gopherwoodFS fs, GWSysInfo* sysInfo) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwGetSysStat start------------------");
-    PARAMETER_ASSERT(sysInfo != NULL, -1, EINVAL);
+
+    PARAMETER_ASSERT(fs, -1, EINVAL);
+    PARAMETER_ASSERT(sysInfo, -1, EINVAL);
 
     int retVal = 0;
     try{
@@ -397,6 +451,8 @@ int gwGetSysStat(gopherwoodFS fs, GWSysInfo* sysInfo) {
 
 int gwEvictBlocks(gopherwoodFS fs, int num) {
     LOG(Gopherwood::Internal::DEBUG1, "------------------gwEvictBlocks start------------------");
+
+    PARAMETER_ASSERT(fs, -1, EINVAL);
     PARAMETER_ASSERT(num > 0 && num < Configuration::NUMBER_OF_BLOCKS, -1, EINVAL);
 
     int retVal = 0;

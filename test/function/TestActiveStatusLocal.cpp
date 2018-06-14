@@ -77,6 +77,7 @@ TEST_F(TestActiveStatusLocal, TestWriteReadConcurrent) {
     gwFile file1 = NULL;
 
     ASSERT_NO_THROW(file = gwOpenFile(fs, fileName, GW_CREAT|GW_RDWR));
+    ASSERT_TRUE(file);
     ASSERT_NO_THROW(len = gwWrite(fs, file, input, 30));
     EXPECT_EQ(30, len);
     ASSERT_NO_THROW(gwFlush(fs, file));
